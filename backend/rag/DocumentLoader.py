@@ -18,9 +18,9 @@ class DocumentLoader(ABC):
 
 
 class UnstructuredDocumentLoader(DocumentLoader):
-    engine:UnstructuredLoader
+    engine: UnstructuredLoader
 
-    def __init__(self,filename):
+    def __init__(self, filename):
         self.engine = UnstructuredLoader(filename)
 
     def load(self) -> list[Document]:
@@ -40,13 +40,14 @@ class DoclingDocumentLoader(DocumentLoader):
 class DocumentLoaderFactory:
 
     @staticmethod
-    def get_loader(filetype: FileTypes, filename:str):
+    def get_loader(filetype: FileTypes, filename: str):
         if filetype == FileTypes.PDF:
             return DoclingDocumentLoader(filename)
         elif filetype == FileTypes.TXT or filetype == FileTypes.OTHER:
             return UnstructuredDocumentLoader(filename)
         else:
             raise ValueError("Incorrect filetype")
+
 
 if __name__ == "__main__":
     pass

@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class DocumentProcessorConfig:
-    name:str
+    name: str
 
 
 class DocumentProcessor:
@@ -10,5 +11,5 @@ class DocumentProcessor:
 
 
 class DocumentProcessorFactory:
-    def create_processor(self, config:DocumentProcessorConfig) -> DocumentProcessor:
+    def create_processor(self, config: DocumentProcessorConfig) -> DocumentProcessor:
         pass
