@@ -32,7 +32,7 @@ class DocumentProcessor:
                     },
                 )
             )
-        self.vector_store.add_documents(chunks)
+        self.vector_store.add_documents(chunk_documents)
 
 
 class DocumentProcessorFactory:

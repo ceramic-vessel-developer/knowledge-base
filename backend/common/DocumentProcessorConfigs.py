@@ -5,7 +5,7 @@ from backend.common.FileTypes import FileTypes
 
 
 class BaseConfig(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, arbitrary_types_allowed=True)
 
 
 class DocumentSplitterConfig(BaseConfig):
