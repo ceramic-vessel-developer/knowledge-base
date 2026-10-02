@@ -3,7 +3,7 @@ from typing import List
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from abc import ABC, abstractmethod
-from ..common.configs import DocumentSplitterConfig
+from backend.common.DocumentProcessorConfigs import DocumentSplitterConfig
 
 
 class DocumentSplitter(ABC):

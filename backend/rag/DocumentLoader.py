@@ -1,6 +1,7 @@
 from langchain_core.documents import Document
 
-from ..common.FileTypes import FileTypes
+from backend.common.DocumentProcessorConfigs import DocumentLoaderConfig
+from backend.common.FileTypes import FileTypes
 from langchain_unstructured import UnstructuredLoader
 from langchain_docling.loader import DoclingLoader
 from abc import ABC, abstractmethod
@@ -40,11 +41,11 @@ class DoclingDocumentLoader(DocumentLoader):
 class DocumentLoaderFactory:
 
     @staticmethod
-    def get_loader(filetype: FileTypes, filename: str):
-        if filetype == FileTypes.PDF:
-            return DoclingDocumentLoader(filename)
-        elif filetype == FileTypes.TXT or filetype == FileTypes.OTHER:
-            return UnstructuredDocumentLoader(filename)
+    def get_loader(config: DocumentLoaderConfig):
+        if config.filetype == FileTypes.PDF:
+            return DoclingDocumentLoader(config.filename)
+        elif config.filetype == FileTypes.TXT or config.filetype == FileTypes.OTHER:
+            return UnstructuredDocumentLoader(config.filename)
         else:
             raise ValueError("Incorrect filetype")
 
