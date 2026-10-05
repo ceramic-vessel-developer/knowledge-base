@@ -47,4 +47,3 @@ class RetrieverConfig(BaseConfig):
     fusion: FusionConfig | None = None
     reranker: RerankerConfig | None = None
     top_n: int | None = None
-    query: str
