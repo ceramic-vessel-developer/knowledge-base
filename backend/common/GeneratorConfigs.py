@@ -20,3 +20,8 @@ class BaseConfig(BaseModel):
 class GeneratorConfig(BaseConfig):
     gen_model_type: GenModelType
     prompt_type: PromptType
+
+
+class RAGPipelineConfig(BaseConfig):
+    retriever_config: RetrieverConfig
+    generator_config: GeneratorConfig
