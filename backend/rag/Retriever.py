@@ -31,9 +31,7 @@ class Retriever:
         if not self.fetchers:
             return []
 
-        ranked_lists = [
-            fetcher.fetch_candidates(query) for fetcher in self.fetchers
-        ]
+        ranked_lists = [fetcher.fetch_candidates(query) for fetcher in self.fetchers]
 
         if self.fusion is not None:
             documents = self.fusion.fuse(ranked_lists)
@@ -60,9 +58,7 @@ class RetrieverFactory:
         rerank_model: RerankModel | None = None,
     ) -> Retriever:
         fetchers = [
-            FetcherFactory.create_fetcher(
-                fetcher_config, vector_store, document_ids
-            )
+            FetcherFactory.create_fetcher(fetcher_config, vector_store, document_ids)
             for fetcher_config in config.fetchers
         ]
 
@@ -73,12 +69,8 @@ class RetrieverFactory:
         reranker = None
         if config.reranker is not None:
             if rerank_model is None:
-                raise ValueError(
-                    "rerank_model is required when reranker config is set"
-                )
-            reranker = RerankerFactory.create_reranker(
-                config.reranker, rerank_model
-            )
+                raise ValueError("rerank_model is required when reranker config is set")
+            reranker = RerankerFactory.create_reranker(config.reranker, rerank_model)
 
         return Retriever(
             fetchers=fetchers,
