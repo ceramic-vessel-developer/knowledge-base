@@ -14,22 +14,32 @@ class FetcherTypes(Enum):
     LEXICAL = 3
 
 
+class FusionTypes(Enum):
+    RRF = 1
+
+
+class RerankerTypes(Enum):
+    CROSS_ENCODER = 1
+
+
 class BaseConfig(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class FetcherConfig(BaseModel):
+class FetcherConfig(BaseConfig):
     category: FetcherCategories
     type: FetcherTypes
     k: int = 10
 
 
-class FusionConfig(BaseModel):
-    pass
+class FusionConfig(BaseConfig):
+    type: FusionTypes = FusionTypes.RRF
+    rrf_k: int = 60
 
 
-class RerankerConfig(BaseModel):
-    pass
+class RerankerConfig(BaseConfig):
+    type: RerankerTypes
+    top_n: int = 5
 
 
 class RetrieverConfig(BaseConfig):
