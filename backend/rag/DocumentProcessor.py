@@ -36,7 +36,9 @@ class DocumentProcessor:
 
 
 class DocumentProcessorFactory:
-    def create_processor(self, config: DocumentProcessorConfig) -> DocumentProcessor:
+    def create_processor(
+        self, config: DocumentProcessorConfig, vector_store: VectorStore
+    ) -> DocumentProcessor:
         loader = DocumentLoaderFactory.get_loader(config.loader_config)
         splitter = DocumentSplitterFactory.get_splitter(config.splitter_config)
-        return DocumentProcessor(loader, splitter, config.vector_store)
+        return DocumentProcessor(loader, splitter, vector_store)
