@@ -1,7 +1,5 @@
 from unittest.mock import MagicMock, patch
 
-from langchain_core.documents import Document
-
 from backend.common.DocumentProcessorConfigs import (
     DocumentLoaderConfig,
     DocumentProcessorConfig,
@@ -61,17 +59,14 @@ class TestDocumentProcessorFactory:
         mock_get_loader.return_value = loader
         mock_get_splitter.return_value = splitter
 
-        loader_config = DocumentLoaderConfig(
-            filename="doc.txt", filetype=FileTypes.TXT
-        )
+        loader_config = DocumentLoaderConfig(filename="doc.txt", filetype=FileTypes.TXT)
         splitter_config = DocumentSplitterConfig(chunk_size=100, chunk_overlap=20)
         config = DocumentProcessorConfig(
             loader_config=loader_config,
             splitter_config=splitter_config,
-            vector_store=vector_store,
         )
 
-        processor = DocumentProcessorFactory().create_processor(config)
+        processor = DocumentProcessorFactory().create_processor(config, vector_store)
 
         mock_get_loader.assert_called_once_with(loader_config)
         mock_get_splitter.assert_called_once_with(splitter_config)

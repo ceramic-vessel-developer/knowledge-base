@@ -42,25 +42,23 @@ class TestDocumentLoaderConfig:
 
 
 class TestDocumentProcessorConfig:
-    def test_accepts_vector_store(self, vector_store):
+    def test_nested_loader_and_splitter_configs(self):
         config = DocumentProcessorConfig(
             loader_config=DocumentLoaderConfig(
                 filename="a.pdf", filetype=FileTypes.PDF
             ),
             splitter_config=DocumentSplitterConfig(),
-            vector_store=vector_store,
         )
 
-        assert config.vector_store is vector_store
         assert config.loader_config.filetype == FileTypes.PDF
+        assert config.splitter_config.chunk_size == 4000
 
-    def test_is_frozen(self, vector_store):
+    def test_is_frozen(self):
         config = DocumentProcessorConfig(
             loader_config=DocumentLoaderConfig(
                 filename="a.txt", filetype=FileTypes.TXT
             ),
             splitter_config=DocumentSplitterConfig(),
-            vector_store=vector_store,
         )
 
         with pytest.raises(ValidationError):
