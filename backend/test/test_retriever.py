@@ -140,9 +140,7 @@ class TestRetrieverFactory:
             fetcher_config, vector_store, document_ids
         )
         mock_create_fusion.assert_called_once_with(fusion_config)
-        mock_create_reranker.assert_called_once_with(
-            reranker_config, rerank_model
-        )
+        mock_create_reranker.assert_called_once_with(reranker_config, rerank_model)
         assert isinstance(retriever, Retriever)
         assert retriever.fetchers == [fetcher]
         assert retriever.fusion is fusion
