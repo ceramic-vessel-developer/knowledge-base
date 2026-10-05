@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import List
 
-from langchain_core.documents import Document
 from pydantic import BaseModel, ConfigDict
+
+from backend.common.RetrieverConfigs import RetrieverConfig
 
 
 class PromptType(Enum):
@@ -20,4 +20,3 @@ class BaseConfig(BaseModel):
 class GeneratorConfig(BaseConfig):
     gen_model_type: GenModelType
     prompt_type: PromptType
-    relevant_chunks: List[Document]

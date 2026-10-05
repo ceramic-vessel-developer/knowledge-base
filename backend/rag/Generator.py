@@ -10,30 +10,23 @@ from backend.rag.promptTemplates import PromptFactory, PromptWrapper
 class Generator:
     model: GenerativeModel
     prompt: PromptWrapper
-    chunks: List[Document]
 
-    def __init__(
-        self,
-        model: GenerativeModel,
-        prompt: PromptWrapper,
-        relevant_chunks: List[Document],
-    ):
+    def __init__(self, model: GenerativeModel, prompt: PromptWrapper):
         self.model = model
         self.prompt = prompt
-        self.chunks = relevant_chunks
 
-    def _format_docs(self) -> str:
-        return "\n\n".join(document.page_content for document in self.chunks)
+    def _format_docs(self, chunks: List[Document]) -> str:
+        return "\n\n".join(document.page_content for document in chunks)
 
-    def invoke(self, question: str) -> str:
-        context = self._format_docs()
+    def invoke(self, question: str, relevant_chunks: List[Document]) -> str:
+        context = self._format_docs(relevant_chunks)
         formatted_prompt = self.prompt.format_prompt(question, context)
         response = self.model.generate_response(formatted_prompt)
         return response
 
 
 class GeneratorFactory:
-    def create_generator(self, config: GeneratorConfig):
+    def create_generator(self, config: GeneratorConfig) -> Generator:
         model = GenerativeModelFactory.create_generative_model(config.gen_model_type)
         prompt = PromptFactory.create_prompt(config.prompt_type)
-        return Generator(model, prompt, config.relevant_chunks)
+        return Generator(model, prompt)
