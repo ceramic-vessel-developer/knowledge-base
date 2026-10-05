@@ -16,22 +16,14 @@ class TestGenerator:
             Document(page_content="chunk one"),
             Document(page_content="chunk two"),
         ]
-        generator = Generator(
-            model=MagicMock(),
-            prompt=MagicMock(),
-            relevant_chunks=chunks,
-        )
+        generator = Generator(model=MagicMock(), prompt=MagicMock())
 
-        assert generator._format_docs() == "chunk one\n\nchunk two"
+        assert generator._format_docs(chunks) == "chunk one\n\nchunk two"
 
     def test_format_docs_empty_chunks(self):
-        generator = Generator(
-            model=MagicMock(),
-            prompt=MagicMock(),
-            relevant_chunks=[],
-        )
+        generator = Generator(model=MagicMock(), prompt=MagicMock())
 
-        assert generator._format_docs() == ""
+        assert generator._format_docs([]) == ""
 
     def test_invoke_formats_prompt_and_calls_model(self):
         model = MagicMock()
@@ -40,8 +32,8 @@ class TestGenerator:
         prompt.format_prompt.return_value = "full prompt"
         model.generate_response.return_value = "model answer"
 
-        generator = Generator(model=model, prompt=prompt, relevant_chunks=chunks)
-        result = generator.invoke("What is RAG?")
+        generator = Generator(model=model, prompt=prompt)
+        result = generator.invoke("What is RAG?", chunks)
 
         prompt.format_prompt.assert_called_once_with("What is RAG?", "context text")
         model.generate_response.assert_called_once_with("full prompt")
@@ -58,12 +50,10 @@ class TestGeneratorFactory:
         prompt = MagicMock()
         mock_create_model.return_value = model
         mock_create_prompt.return_value = prompt
-        chunks = [Document(page_content="retrieved")]
 
         config = GeneratorConfig(
             gen_model_type=GenModelType.GEMINI_3_5_FLASH_LITE,
             prompt_type=PromptType.BASIC,
-            relevant_chunks=chunks,
         )
 
         generator = GeneratorFactory().create_generator(config)
@@ -73,4 +63,3 @@ class TestGeneratorFactory:
         assert isinstance(generator, Generator)
         assert generator.model is model
         assert generator.prompt is prompt
-        assert generator.chunks == chunks

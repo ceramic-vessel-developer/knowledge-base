@@ -1,11 +1,17 @@
 import pytest
-from langchain_core.documents import Document
 from pydantic import ValidationError
 
 from backend.common.GeneratorConfigs import (
     GenModelType,
     GeneratorConfig,
     PromptType,
+    RAGPipelineConfig,
+)
+from backend.common.RetrieverConfigs import (
+    FetcherCategories,
+    FetcherConfig,
+    FetcherTypes,
+    RetrieverConfig,
 )
 
 
@@ -20,22 +26,19 @@ class TestGenModelType:
 
 
 class TestGeneratorConfig:
-    def test_accepts_documents(self):
-        chunks = [Document(page_content="chunk")]
+    def test_creates_with_required_fields(self):
         config = GeneratorConfig(
             gen_model_type=GenModelType.GEMINI_3_5_FLASH_LITE,
             prompt_type=PromptType.BASIC,
-            relevant_chunks=chunks,
         )
 
         assert config.prompt_type == PromptType.BASIC
-        assert config.relevant_chunks == chunks
+        assert config.gen_model_type == GenModelType.GEMINI_3_5_FLASH_LITE
 
     def test_is_frozen(self):
         config = GeneratorConfig(
             gen_model_type=GenModelType.GEMINI_3_5_FLASH_LITE,
             prompt_type=PromptType.BASIC,
-            relevant_chunks=[],
         )
 
         with pytest.raises(ValidationError):
@@ -44,3 +47,24 @@ class TestGeneratorConfig:
     def test_missing_fields_raise(self):
         with pytest.raises(ValidationError):
             GeneratorConfig()
+
+
+class TestRAGPipelineConfig:
+    def test_nests_retriever_and_generator_configs(self):
+        config = RAGPipelineConfig(
+            retriever_config=RetrieverConfig(
+                fetchers=[
+                    FetcherConfig(
+                        category=FetcherCategories.DENSE,
+                        type=FetcherTypes.SIMILARITY,
+                    )
+                ]
+            ),
+            generator_config=GeneratorConfig(
+                gen_model_type=GenModelType.GEMINI_3_5_FLASH_LITE,
+                prompt_type=PromptType.BASIC,
+            ),
+        )
+
+        assert config.generator_config.prompt_type == PromptType.BASIC
+        assert len(config.retriever_config.fetchers) == 1
