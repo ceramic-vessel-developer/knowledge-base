@@ -28,11 +28,17 @@ def upgrade() -> None:
         "documents",
         sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
         sa.Column("filename", sa.String(length=1024), nullable=False),
-        sa.Column("filetype", sa.Enum(
-            "PDF", "TXT", "OTHER",
-            name="filetype_enum",
-            native_enum=False,
-        ), nullable=False),
+        sa.Column(
+            "filetype",
+            sa.Enum(
+                "PDF",
+                "TXT",
+                "OTHER",
+                name="filetype_enum",
+                native_enum=False,
+            ),
+            nullable=False,
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -72,8 +78,7 @@ def upgrade() -> None:
         "USING hnsw (embedding vector_cosine_ops)"
     )
     op.execute(
-        "CREATE INDEX ix_chunks_content_tsv_gin ON chunks "
-        "USING gin (content_tsv)"
+        "CREATE INDEX ix_chunks_content_tsv_gin ON chunks " "USING gin (content_tsv)"
     )
 
 
