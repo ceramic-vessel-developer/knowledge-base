@@ -22,11 +22,12 @@ class TestRetriever:
         docs = [Document(page_content="a"), Document(page_content="b")]
         fetcher = MagicMock()
         fetcher.fetch_candidates.return_value = docs
+        document_ids = [str(uuid4())]
 
-        result = Retriever(fetchers=[fetcher]).retrieve("query")
+        result = Retriever(fetchers=[fetcher]).retrieve("query", document_ids)
 
         assert result == docs
-        fetcher.fetch_candidates.assert_called_once_with("query")
+        fetcher.fetch_candidates.assert_called_once_with("query", document_ids)
 
     def test_retrieve_fuses_multiple_fetcher_results(self):
         list_1 = [Document(page_content="a")]
@@ -38,11 +39,12 @@ class TestRetriever:
         fusion = MagicMock()
         fused = [Document(page_content="fused")]
         fusion.fuse.return_value = fused
+        document_ids = [str(uuid4())]
 
         result = Retriever(
             fetchers=[fetcher_1, fetcher_2],
             fusion=fusion,
-        ).retrieve("query")
+        ).retrieve("query", document_ids)
 
         fusion.fuse.assert_called_once_with([list_1, list_2])
         assert result == fused
@@ -56,9 +58,9 @@ class TestRetriever:
         with pytest.raises(
             ValueError, match="Multiple fetchers require a fusion strategy"
         ):
-            Retriever(fetchers=[fetcher_1, fetcher_2]).retrieve("query")
+            Retriever(fetchers=[fetcher_1, fetcher_2]).retrieve("query", [str(uuid4())])
 
-    def test_retrieve_applies_reranker(self):
+    def test_retrieve_applies_reranker_with_reranker_top_n(self):
         docs = [Document(page_content="a"), Document(page_content="b")]
         fetcher = MagicMock()
         fetcher.fetch_candidates.return_value = docs
@@ -69,10 +71,11 @@ class TestRetriever:
         result = Retriever(
             fetchers=[fetcher],
             reranker=reranker,
-            top_n=1,
-        ).retrieve("query")
+            top_n=10,
+        ).retrieve("query", [str(uuid4())])
 
-        reranker.rerank.assert_called_once_with("query", docs, top_n=1)
+        # RetrieverConfig.top_n must not override RerankerConfig.top_n.
+        reranker.rerank.assert_called_once_with("query", docs)
         assert result == reranked
 
     def test_retrieve_truncates_with_top_n_without_reranker(self):
@@ -84,12 +87,14 @@ class TestRetriever:
         fetcher = MagicMock()
         fetcher.fetch_candidates.return_value = docs
 
-        result = Retriever(fetchers=[fetcher], top_n=2).retrieve("query")
+        result = Retriever(fetchers=[fetcher], top_n=2).retrieve(
+            "query", [str(uuid4())]
+        )
 
         assert result == docs[:2]
 
     def test_retrieve_with_no_fetchers_returns_empty(self):
-        assert Retriever(fetchers=[]).retrieve("query") == []
+        assert Retriever(fetchers=[]).retrieve("query", [str(uuid4())]) == []
 
 
 class TestRetrieverFactory:
@@ -101,12 +106,11 @@ class TestRetrieverFactory:
         mock_create_fetcher,
         mock_create_fusion,
         mock_create_reranker,
-        vector_store,
+        rag_runtime_with_reranker,
     ):
         fetcher = MagicMock()
         fusion = MagicMock()
         reranker = MagicMock()
-        rerank_model = MagicMock()
         mock_create_fetcher.return_value = fetcher
         mock_create_fusion.return_value = fusion
         mock_create_reranker.return_value = reranker
@@ -127,27 +131,26 @@ class TestRetrieverFactory:
             reranker=reranker_config,
             top_n=3,
         )
-        document_ids = [str(uuid4())]
 
-        retriever = RetrieverFactory().create_retriever(
+        retriever = RetrieverFactory.create_retriever(
             config,
-            vector_store,
-            document_ids,
-            rerank_model=rerank_model,
+            rag_runtime_with_reranker,
         )
 
         mock_create_fetcher.assert_called_once_with(
-            fetcher_config, vector_store, document_ids
+            fetcher_config, rag_runtime_with_reranker
         )
         mock_create_fusion.assert_called_once_with(fusion_config)
-        mock_create_reranker.assert_called_once_with(reranker_config, rerank_model)
+        mock_create_reranker.assert_called_once_with(
+            reranker_config, rag_runtime_with_reranker.rerank_model
+        )
         assert isinstance(retriever, Retriever)
         assert retriever.fetchers == [fetcher]
         assert retriever.fusion is fusion
         assert retriever.reranker is reranker
         assert retriever.top_n == 3
 
-    def test_create_retriever_without_optional_components(self, vector_store):
+    def test_create_retriever_without_optional_components(self, rag_runtime):
         config = RetrieverConfig(
             fetchers=[
                 FetcherConfig(
@@ -161,16 +164,14 @@ class TestRetrieverFactory:
             "backend.rag.Retriever.FetcherFactory.create_fetcher"
         ) as mock_create_fetcher:
             mock_create_fetcher.return_value = MagicMock()
-            retriever = RetrieverFactory().create_retriever(
-                config, vector_store, [str(uuid4())]
-            )
+            retriever = RetrieverFactory.create_retriever(config, rag_runtime)
 
         assert retriever.fusion is None
         assert retriever.reranker is None
         assert retriever.top_n is None
 
     def test_create_retriever_requires_model_when_reranker_configured(
-        self, vector_store
+        self, rag_runtime
     ):
         config = RetrieverConfig(
             fetchers=[
@@ -186,7 +187,20 @@ class TestRetrieverFactory:
             "backend.rag.Retriever.FetcherFactory.create_fetcher",
             return_value=MagicMock(),
         ):
-            with pytest.raises(ValueError, match="rerank_model is required"):
-                RetrieverFactory().create_retriever(
-                    config, vector_store, [str(uuid4())]
-                )
+            with pytest.raises(ValueError, match="runtime.rerank_model is required"):
+                RetrieverFactory.create_retriever(config, rag_runtime)
+
+    def test_config_rejects_multiple_fetchers_without_fusion(self):
+        with pytest.raises(ValueError, match="Multiple fetchers require a fusion"):
+            RetrieverConfig(
+                fetchers=[
+                    FetcherConfig(
+                        category=FetcherCategories.DENSE,
+                        type=FetcherTypes.SIMILARITY,
+                    ),
+                    FetcherConfig(
+                        category=FetcherCategories.DENSE,
+                        type=FetcherTypes.MMR,
+                    ),
+                ]
+            )

@@ -21,14 +21,15 @@ from backend.rag.RAGPipeline import RAGPipeline, RAGPipelineFactory
 class TestRAGPipeline:
     def test_run_retrieves_then_generates(self):
         chunks = [Document(page_content="context")]
+        document_ids = [str(uuid4())]
         retriever = MagicMock()
         generator = MagicMock()
         retriever.retrieve.return_value = chunks
         generator.invoke.return_value = "final answer"
 
-        result = RAGPipeline(retriever, generator).run("What is RAG?")
+        result = RAGPipeline(retriever, generator).run("What is RAG?", document_ids)
 
-        retriever.retrieve.assert_called_once_with("What is RAG?")
+        retriever.retrieve.assert_called_once_with("What is RAG?", document_ids)
         generator.invoke.assert_called_once_with("What is RAG?", chunks)
         assert result == "final answer"
 
@@ -40,11 +41,10 @@ class TestRAGPipelineFactory:
         self,
         mock_create_retriever,
         mock_create_generator,
-        vector_store,
+        rag_runtime_with_reranker,
     ):
         retriever = MagicMock()
         generator = MagicMock()
-        rerank_model = MagicMock()
         mock_create_retriever.return_value = retriever
         mock_create_generator.return_value = generator
 
@@ -64,20 +64,15 @@ class TestRAGPipelineFactory:
             retriever_config=retriever_config,
             generator_config=generator_config,
         )
-        document_ids = [str(uuid4())]
 
-        pipeline = RAGPipelineFactory().create_pipeline(
+        pipeline = RAGPipelineFactory.create_pipeline(
             config,
-            vector_store,
-            document_ids,
-            rerank_model=rerank_model,
+            rag_runtime_with_reranker,
         )
 
         mock_create_retriever.assert_called_once_with(
             retriever_config,
-            vector_store,
-            document_ids,
-            rerank_model=rerank_model,
+            rag_runtime_with_reranker,
         )
         mock_create_generator.assert_called_once_with(generator_config)
         assert isinstance(pipeline, RAGPipeline)

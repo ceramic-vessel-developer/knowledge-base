@@ -36,9 +36,9 @@ class TestRecursiveCharacterDocumentSplitter:
 
 
 class TestDocumentSplitterFactory:
-    def test_get_splitter_returns_recursive_splitter(self):
+    def test_create_splitter_returns_recursive_splitter(self):
         config = DocumentSplitterConfig(chunk_size=200, chunk_overlap=40)
 
-        splitter = DocumentSplitterFactory.get_splitter(config)
+        splitter = DocumentSplitterFactory.create_splitter(config)
 
         assert isinstance(splitter, RecursiveCharacterDocumentSplitter)

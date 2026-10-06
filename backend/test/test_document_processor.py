@@ -49,15 +49,15 @@ class TestDocumentProcessor:
 
 
 class TestDocumentProcessorFactory:
-    @patch("backend.rag.DocumentProcessor.DocumentSplitterFactory.get_splitter")
-    @patch("backend.rag.DocumentProcessor.DocumentLoaderFactory.get_loader")
+    @patch("backend.rag.DocumentProcessor.DocumentSplitterFactory.create_splitter")
+    @patch("backend.rag.DocumentProcessor.DocumentLoaderFactory.create_loader")
     def test_create_processor_wires_dependencies(
-        self, mock_get_loader, mock_get_splitter, vector_store
+        self, mock_create_loader, mock_create_splitter, vector_store
     ):
         loader = MagicMock()
         splitter = MagicMock()
-        mock_get_loader.return_value = loader
-        mock_get_splitter.return_value = splitter
+        mock_create_loader.return_value = loader
+        mock_create_splitter.return_value = splitter
 
         loader_config = DocumentLoaderConfig(filename="doc.txt", filetype=FileTypes.TXT)
         splitter_config = DocumentSplitterConfig(chunk_size=100, chunk_overlap=20)
@@ -66,10 +66,10 @@ class TestDocumentProcessorFactory:
             splitter_config=splitter_config,
         )
 
-        processor = DocumentProcessorFactory().create_processor(config, vector_store)
+        processor = DocumentProcessorFactory.create_processor(config, vector_store)
 
-        mock_get_loader.assert_called_once_with(loader_config)
-        mock_get_splitter.assert_called_once_with(splitter_config)
+        mock_create_loader.assert_called_once_with(loader_config)
+        mock_create_splitter.assert_called_once_with(splitter_config)
         assert isinstance(processor, DocumentProcessor)
         assert processor.loader is loader
         assert processor.splitter is splitter

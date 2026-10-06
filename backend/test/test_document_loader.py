@@ -56,7 +56,7 @@ class TestDocumentLoaderFactory:
         mock_docling.return_value = MagicMock()
         config = DocumentLoaderConfig(filename="a.pdf", filetype=FileTypes.PDF)
 
-        loader = DocumentLoaderFactory.get_loader(config)
+        loader = DocumentLoaderFactory.create_loader(config)
 
         mock_docling.assert_called_once_with("a.pdf")
         assert loader is mock_docling.return_value
@@ -66,7 +66,7 @@ class TestDocumentLoaderFactory:
         mock_unstructured.return_value = MagicMock()
         config = DocumentLoaderConfig(filename="a.txt", filetype=FileTypes.TXT)
 
-        loader = DocumentLoaderFactory.get_loader(config)
+        loader = DocumentLoaderFactory.create_loader(config)
 
         mock_unstructured.assert_called_once_with("a.txt")
         assert loader is mock_unstructured.return_value
@@ -76,7 +76,7 @@ class TestDocumentLoaderFactory:
         mock_unstructured.return_value = MagicMock()
         config = DocumentLoaderConfig(filename="a.md", filetype=FileTypes.OTHER)
 
-        loader = DocumentLoaderFactory.get_loader(config)
+        loader = DocumentLoaderFactory.create_loader(config)
 
         mock_unstructured.assert_called_once_with("a.md")
         assert loader is mock_unstructured.return_value
@@ -87,4 +87,4 @@ class TestDocumentLoaderFactory:
         config.filename = "x.bin"
 
         with pytest.raises(ValueError, match="Incorrect filetype"):
-            DocumentLoaderFactory.get_loader(config)
+            DocumentLoaderFactory.create_loader(config)

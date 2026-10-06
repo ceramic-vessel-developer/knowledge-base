@@ -6,6 +6,8 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import FakeEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
 
+from backend.common.RagRuntime import RagRuntime
+
 
 @pytest.fixture
 def sample_documents():
@@ -41,3 +43,17 @@ def mock_vector_store():
 @pytest.fixture
 def vector_store():
     return InMemoryVectorStore(embedding=FakeEmbeddings(size=16))
+
+
+@pytest.fixture
+def rag_runtime(vector_store):
+    return RagRuntime(vector_store=vector_store)
+
+
+@pytest.fixture
+def rag_runtime_with_reranker(vector_store):
+    return RagRuntime(
+        vector_store=vector_store,
+        rerank_model=MagicMock(),
+        db_session=MagicMock(),
+    )

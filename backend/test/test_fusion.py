@@ -22,12 +22,13 @@ class TestDocumentKey:
 
         assert document_key(doc) == "doc-1:2"
 
-    def test_falls_back_to_truncated_page_content(self):
+    def test_falls_back_to_content_hash(self):
+        from hashlib import sha256
+
         content = "x" * 80
         doc = Document(page_content=content, metadata={})
 
-        assert document_key(doc) == content[:50]
-        assert len(document_key(doc)) == 50
+        assert document_key(doc) == sha256(content.encode("utf-8")).hexdigest()
 
 
 class TestRRFFusion:

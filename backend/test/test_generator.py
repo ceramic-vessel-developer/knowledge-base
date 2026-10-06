@@ -56,7 +56,7 @@ class TestGeneratorFactory:
             prompt_type=PromptType.BASIC,
         )
 
-        generator = GeneratorFactory().create_generator(config)
+        generator = GeneratorFactory.create_generator(config)
 
         mock_create_model.assert_called_once_with(GenModelType.GEMINI_3_5_FLASH_LITE)
         mock_create_prompt.assert_called_once_with(PromptType.BASIC)
