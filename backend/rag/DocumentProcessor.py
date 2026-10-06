@@ -1,10 +1,11 @@
+from uuid import UUID
+
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 
 from backend.common.DocumentProcessorConfigs import DocumentProcessorConfig
 from backend.rag.DocumentLoader import DocumentLoader, DocumentLoaderFactory
 from backend.rag.DocumentSplitter import DocumentSplitter, DocumentSplitterFactory
-from uuid import UUID
 
 
 class DocumentProcessor:
@@ -36,9 +37,10 @@ class DocumentProcessor:
 
 
 class DocumentProcessorFactory:
+    @staticmethod
     def create_processor(
-        self, config: DocumentProcessorConfig, vector_store: VectorStore
+        config: DocumentProcessorConfig, vector_store: VectorStore
     ) -> DocumentProcessor:
-        loader = DocumentLoaderFactory.get_loader(config.loader_config)
-        splitter = DocumentSplitterFactory.get_splitter(config.splitter_config)
+        loader = DocumentLoaderFactory.create_loader(config.loader_config)
+        splitter = DocumentSplitterFactory.create_splitter(config.splitter_config)
         return DocumentProcessor(loader, splitter, vector_store)

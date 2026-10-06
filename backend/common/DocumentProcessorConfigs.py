@@ -1,10 +1,5 @@
-from pydantic import BaseModel, ConfigDict
-
+from backend.common.BaseConfig import BaseConfig
 from backend.common.FileTypes import FileTypes
-
-
-class BaseConfig(BaseModel):
-    model_config = ConfigDict(frozen=True)
 
 
 class DocumentSplitterConfig(BaseConfig):

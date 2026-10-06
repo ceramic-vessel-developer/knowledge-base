@@ -37,7 +37,7 @@ class DoclingDocumentLoader(DocumentLoader):
 class DocumentLoaderFactory:
 
     @staticmethod
-    def get_loader(config: DocumentLoaderConfig):
+    def create_loader(config: DocumentLoaderConfig):
         if config.filetype == FileTypes.PDF:
             return DoclingDocumentLoader(config.filename)
         elif config.filetype == FileTypes.TXT or config.filetype == FileTypes.OTHER:

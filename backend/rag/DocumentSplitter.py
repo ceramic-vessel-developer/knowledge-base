@@ -26,10 +26,10 @@ class DocumentSplitterFactory:
 
     # TODO implement getting splitters based on filetype
     @staticmethod
-    def get_splitter(config: DocumentSplitterConfig) -> DocumentSplitter:
+    def create_splitter(config: DocumentSplitterConfig) -> DocumentSplitter:
         return RecursiveCharacterDocumentSplitter(config)
 
 
 if __name__ == "__main__":
     config = DocumentSplitterConfig(chunk_size=200, chunk_overlap=40)
-    print(DocumentSplitterFactory.get_splitter(config))
+    print(DocumentSplitterFactory.create_splitter(config))

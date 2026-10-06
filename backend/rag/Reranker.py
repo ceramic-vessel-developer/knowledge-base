@@ -1,16 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import List, Protocol, Sequence
+from typing import List
 
 from langchain_core.documents import Document
 
+from backend.common.protocols import RerankModel
 from backend.common.RetrieverConfigs import RerankerConfig, RerankerTypes
 
 DEFAULT_BGE_RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"
-
-
-class RerankModel(Protocol):
-
-    def predict(self, sentences: Sequence[List[str]]) -> Sequence[float]: ...
 
 
 class Reranker(ABC):

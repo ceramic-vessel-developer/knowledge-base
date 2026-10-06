@@ -26,7 +26,8 @@ class Generator:
 
 
 class GeneratorFactory:
-    def create_generator(self, config: GeneratorConfig) -> Generator:
+    @staticmethod
+    def create_generator(config: GeneratorConfig) -> Generator:
         model = GenerativeModelFactory.create_generative_model(config.gen_model_type)
         prompt = PromptFactory.create_prompt(config.prompt_type)
         return Generator(model, prompt)

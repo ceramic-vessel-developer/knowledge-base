@@ -1,10 +1,8 @@
 from typing import List
 
-from langchain_core.vectorstores import VectorStore
-
 from backend.common.GeneratorConfigs import RAGPipelineConfig
+from backend.common.RagRuntime import RagRuntime
 from backend.rag.Generator import Generator, GeneratorFactory
-from backend.rag.Reranker import RerankModel
 from backend.rag.Retriever import Retriever, RetrieverFactory
 
 
@@ -16,24 +14,20 @@ class RAGPipeline:
         self.retriever = retriever
         self.generator = generator
 
-    def run(self, question: str) -> str:
-        relevant_chunks = self.retriever.retrieve(question)
+    def run(self, question: str, document_ids: List[str]) -> str:
+        relevant_chunks = self.retriever.retrieve(question, document_ids)
         return self.generator.invoke(question, relevant_chunks)
 
 
 class RAGPipelineFactory:
+    @staticmethod
     def create_pipeline(
-        self,
         config: RAGPipelineConfig,
-        vector_store: VectorStore,
-        document_ids: List[str],
-        rerank_model: RerankModel | None = None,
+        runtime: RagRuntime,
     ) -> RAGPipeline:
-        retriever = RetrieverFactory().create_retriever(
+        retriever = RetrieverFactory.create_retriever(
             config.retriever_config,
-            vector_store,
-            document_ids,
-            rerank_model=rerank_model,
+            runtime,
         )
-        generator = GeneratorFactory().create_generator(config.generator_config)
+        generator = GeneratorFactory.create_generator(config.generator_config)
         return RAGPipeline(retriever, generator)

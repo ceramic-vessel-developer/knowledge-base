@@ -1,3 +1,4 @@
+from hashlib import sha256
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -16,7 +17,7 @@ def document_key(document: Document) -> str:
     if document_id is not None and chunk_index is not None:
         return f"{document_id}:{chunk_index}"
 
-    return document.page_content[:50]
+    return sha256(document.page_content.encode("utf-8")).hexdigest()
 
 
 class Fusion(ABC):

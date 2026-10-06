@@ -1,7 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
-
+from backend.common.BaseConfig import BaseConfig
 from backend.common.RetrieverConfigs import RetrieverConfig
 
 
@@ -11,10 +10,6 @@ class PromptType(Enum):
 
 class GenModelType(Enum):
     GEMINI_3_5_FLASH_LITE = 1
-
-
-class BaseConfig(BaseModel):
-    model_config = ConfigDict(frozen=True)
 
 
 class GeneratorConfig(BaseConfig):
