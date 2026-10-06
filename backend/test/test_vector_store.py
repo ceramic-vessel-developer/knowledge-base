@@ -33,9 +33,7 @@ class TestCreateChunksVectorStore:
 
     @patch("backend.db.vector_store.PGEngine.from_connection_string")
     @patch("backend.db.vector_store.PGVectorStore.create_sync")
-    def test_builds_engine_from_url_when_missing(
-        self, mock_create_sync, mock_from_url
-    ):
+    def test_builds_engine_from_url_when_missing(self, mock_create_sync, mock_from_url):
         embeddings = MagicMock()
         mock_from_url.return_value = MagicMock()
         mock_create_sync.return_value = MagicMock()
@@ -44,9 +42,7 @@ class TestCreateChunksVectorStore:
             embeddings, database_url="postgresql+psycopg://localhost/db"
         )
 
-        mock_from_url.assert_called_once_with(
-            url="postgresql+psycopg://localhost/db"
-        )
+        mock_from_url.assert_called_once_with(url="postgresql+psycopg://localhost/db")
         mock_create_sync.assert_called_once()
         assert mock_create_sync.call_args.kwargs["engine"] is mock_from_url.return_value
 
@@ -58,7 +54,5 @@ class TestCreatePgEngine:
 
         engine = create_pg_engine("postgresql+psycopg://localhost/db")
 
-        mock_from_url.assert_called_once_with(
-            url="postgresql+psycopg://localhost/db"
-        )
+        mock_from_url.assert_called_once_with(url="postgresql+psycopg://localhost/db")
         assert engine is mock_from_url.return_value

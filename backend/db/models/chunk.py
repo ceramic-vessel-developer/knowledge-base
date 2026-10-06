@@ -8,14 +8,14 @@ from sqlalchemy import Computed, ForeignKey, Integer, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.db.base import Base
+from backend.db.base import Base, TimestampSoftDeleteMixin
 from backend.db.constants import EMBEDDING_DIMENSIONS
 
 if TYPE_CHECKING:
     from backend.db.models.document import Document
 
 
-class Chunk(Base):
+class Chunk(TimestampSoftDeleteMixin, Base):
     """Owned chunk row: dense embedding + auto-generated lexical tsvector.
 
     ``content_tsv`` is a Postgres GENERATED ALWAYS column; do not set it in ORM

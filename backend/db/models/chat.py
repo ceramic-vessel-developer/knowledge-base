@@ -3,32 +3,26 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from sqlalchemy import Enum, ForeignKey, String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from backend.common.FileTypes import FileTypes
 from backend.db.base import Base, TimestampSoftDeleteMixin
 
 if TYPE_CHECKING:
-    from backend.db.models.chunk import Chunk
+    from backend.db.models.chat_message import ChatMessage
     from backend.db.models.workspace import Workspace
 
 
-class Document(TimestampSoftDeleteMixin, Base):
-    __tablename__ = "documents"
+class Chat(TimestampSoftDeleteMixin, Base):
+    __tablename__ = "chats"
 
     id: Mapped[str] = mapped_column(
         UUID(as_uuid=False),
         primary_key=True,
         default=lambda: str(uuid4()),
     )
-    filename: Mapped[str] = mapped_column(String(1024), nullable=False)
-    filetype: Mapped[FileTypes] = mapped_column(
-        Enum(FileTypes, name="filetype_enum", native_enum=False),
-        nullable=False,
-    )
-
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
     workspace_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False),
         ForeignKey("workspaces.id", ondelete="CASCADE"),
@@ -36,12 +30,13 @@ class Document(TimestampSoftDeleteMixin, Base):
         index=True,
     )
 
-    chunks: Mapped[list[Chunk]] = relationship(
-        "Chunk",
-        back_populates="document",
+    messages: Mapped[list[ChatMessage]] = relationship(
+        "ChatMessage",
+        back_populates="chat",
         cascade="all, delete-orphan",
     )
+
     workspace: Mapped[Workspace] = relationship(
         "Workspace",
-        back_populates="documents",
+        back_populates="chats",
     )
