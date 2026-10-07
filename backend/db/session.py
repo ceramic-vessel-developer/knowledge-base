@@ -1,8 +1,11 @@
 import os
 
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
+
+load_dotenv()
 
 _DEFAULT_URL = "postgresql+psycopg://postgres:postgres@localhost:5432/knowledge"
 

@@ -7,6 +7,10 @@ existing columns — no LangChain-owned table creation.
 
 from __future__ import annotations
 
+import asyncio
+import sys
+from threading import Thread
+
 from langchain_core.embeddings import Embeddings
 from langchain_postgres import PGEngine, PGVectorStore
 
@@ -19,7 +23,28 @@ CHUNKS_EMBEDDING_COLUMN = "embedding"
 CHUNKS_METADATA_COLUMNS = ["document_id", "chunk_index"]
 
 
+def _ensure_windows_selector_event_loop() -> None:
+    """Pre-seed PGEngine's background loop with SelectorEventLoop on Windows.
+
+    ``PGEngine.from_connection_string`` calls ``asyncio.new_event_loop()``, which
+    yields ProactorEventLoop on Windows. Async psycopg needs SelectorEventLoop
+    (``add_reader`` / ``add_writer``). Event-loop policies are deprecated in
+    3.14+, so we install the compatible loop on ``PGEngine`` before it creates
+    its own.
+    """
+    if sys.platform != "win32":
+        return
+    if PGEngine._default_loop is not None:
+        return
+    loop = asyncio.SelectorEventLoop()
+    thread = Thread(target=loop.run_forever, daemon=True)
+    thread.start()
+    PGEngine._default_loop = loop
+    PGEngine._default_thread = thread
+
+
 def create_pg_engine(database_url: str | None = None) -> PGEngine:
+    _ensure_windows_selector_event_loop()
     return PGEngine.from_connection_string(url=database_url or get_database_url())
 
 
