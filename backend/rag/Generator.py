@@ -16,7 +16,11 @@ class Generator:
         self.prompt = prompt
 
     def _format_docs(self, chunks: List[Document]) -> str:
-        return "\n\n".join(document.page_content for document in chunks)
+        parts: list[str] = []
+        for i, document in enumerate(chunks, start=1):
+            label = f"[{i}]"
+            parts.append(f"{label}\n{document.page_content}")
+        return "\n\n".join(parts)
 
     def invoke(self, question: str, relevant_chunks: List[Document]) -> str:
         context = self._format_docs(relevant_chunks)

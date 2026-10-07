@@ -11,14 +11,14 @@ from backend.rag.Generator import Generator, GeneratorFactory
 
 
 class TestGenerator:
-    def test_format_docs_joins_page_content(self):
+    def test_format_docs_numbers_chunks(self):
         chunks = [
             Document(page_content="chunk one"),
             Document(page_content="chunk two"),
         ]
         generator = Generator(model=MagicMock(), prompt=MagicMock())
 
-        assert generator._format_docs(chunks) == "chunk one\n\nchunk two"
+        assert generator._format_docs(chunks) == "[1]\nchunk one\n\n[2]\nchunk two"
 
     def test_format_docs_empty_chunks(self):
         generator = Generator(model=MagicMock(), prompt=MagicMock())
@@ -35,7 +35,9 @@ class TestGenerator:
         generator = Generator(model=model, prompt=prompt)
         result = generator.invoke("What is RAG?", chunks)
 
-        prompt.format_prompt.assert_called_once_with("What is RAG?", "context text")
+        prompt.format_prompt.assert_called_once_with(
+            "What is RAG?", "[1]\ncontext text"
+        )
         model.generate_response.assert_called_once_with("full prompt")
         assert result == "model answer"
 
