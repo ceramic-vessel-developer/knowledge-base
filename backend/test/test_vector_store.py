@@ -1,4 +1,9 @@
+import asyncio
+import sys
 from unittest.mock import MagicMock, patch
+
+import pytest
+from langchain_postgres import PGEngine
 
 from backend.db.vector_store import (
     CHUNKS_CONTENT_COLUMN,
@@ -6,6 +11,7 @@ from backend.db.vector_store import (
     CHUNKS_ID_COLUMN,
     CHUNKS_METADATA_COLUMNS,
     CHUNKS_TABLE,
+    _ensure_windows_selector_event_loop,
     create_chunks_vector_store,
     create_pg_engine,
 )
@@ -56,3 +62,24 @@ class TestCreatePgEngine:
 
         mock_from_url.assert_called_once_with(url="postgresql+psycopg://localhost/db")
         assert engine is mock_from_url.return_value
+
+
+@pytest.mark.skipif(
+    sys.platform != "win32", reason="Windows-only SelectorEventLoop seed"
+)
+class TestWindowsSelectorEventLoop:
+    def test_seeds_pgengine_with_selector_loop(self):
+        saved_loop = PGEngine._default_loop
+        saved_thread = PGEngine._default_thread
+        PGEngine._default_loop = None
+        PGEngine._default_thread = None
+        try:
+            _ensure_windows_selector_event_loop()
+            assert isinstance(PGEngine._default_loop, asyncio.SelectorEventLoop)
+            assert PGEngine._default_thread is not None
+            assert PGEngine._default_thread.is_alive()
+        finally:
+            # Leave the seeded loop running; only restore if we did not seed.
+            if saved_loop is not None:
+                PGEngine._default_loop = saved_loop
+                PGEngine._default_thread = saved_thread
