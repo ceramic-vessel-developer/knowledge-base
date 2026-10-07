@@ -28,6 +28,21 @@ class TestGemini35FlashLiteGenerativeModel:
         assert result == "answer text"
         mock_engine.invoke.assert_called_once_with("formatted prompt")
 
+    @patch("backend.rag.GenerativeModel.ChatGoogleGenerativeAI")
+    def test_generate_response_flattens_content_blocks(self, mock_chat_cls):
+        mock_engine = MagicMock()
+        mock_engine.invoke.return_value = MagicMock(
+            content=[
+                {"type": "text", "text": "hello "},
+                {"type": "text", "text": "world"},
+            ]
+        )
+        mock_chat_cls.return_value = mock_engine
+
+        model = Gemini35FlashLiteGenerativeModel()
+
+        assert model.generate_response("formatted prompt") == "hello world"
+
 
 class TestGenerativeModelFactory:
     @patch("backend.rag.GenerativeModel.ChatGoogleGenerativeAI")
