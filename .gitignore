@@ -1,2 +1,6 @@
 playground
 .idea
+__pycache__/
+.env
+/backend/rag/test_rag.py
+/backend/rag/sample_docs/
