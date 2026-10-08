@@ -1,0 +1,39 @@
+.hero {
+  min-height: 100vh;
+  display: grid;
+  align-items: center;
+  padding: 3rem 0 4rem;
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 7vw, 4.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--leaf-deep);
+  margin-bottom: 1rem;
+  max-width: 12ch;
+}
+
+.lead {
+  font-size: 1.15rem;
+  max-width: 36rem;
+  color: var(--ink-soft);
+  margin-bottom: 2rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, transparent 40%, rgba(184, 92, 56, 0.08) 100%),
+    radial-gradient(circle at 80% 70%, rgba(31, 107, 74, 0.16), transparent 40%);
+  z-index: -1;
+}
