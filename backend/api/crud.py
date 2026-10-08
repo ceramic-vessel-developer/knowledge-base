@@ -78,6 +78,19 @@ def get_workspace_for_user(
     )
 
 
+def update_workspace_for_user(
+    db: Session,
+    user_id: str,
+    workspace_id: str,
+    name: str,
+) -> Workspace | None:
+    workspace = get_workspace_for_user(db, user_id, workspace_id)
+    if workspace is None:
+        return None
+    workspace.name = name
+    return _save(db, workspace)
+
+
 def get_workspaces_for_user(
     db: Session,
     user_id: str,
@@ -220,6 +233,19 @@ def get_chat_for_user(
             Workspace.is_deleted.is_(False),
         )
     )
+
+
+def update_chat_for_user(
+    db: Session,
+    user_id: str,
+    chat_id: str,
+    name: str,
+) -> Chat | None:
+    chat = get_chat_for_user(db, user_id, chat_id)
+    if chat is None:
+        return None
+    chat.name = name
+    return _save(db, chat)
 
 
 def get_chats_for_workspace(

@@ -12,6 +12,7 @@ from starlette import status
 from backend.api.crud import (
     create_document,
     delete_document_for_user,
+    get_document_for_user,
     get_documents_for_workspace,
     get_workspace_for_user,
 )
@@ -65,26 +66,25 @@ async def upload_user_document(
             detail="Workspace not found",
         )
 
-    # Generate UUID for filename
-    file_uuid = str(uuid.uuid4())
-    file_ext = os.path.splitext(file.filename)[1]  # Get file extension
-    filename = f"{file_uuid}{file_ext}"
+    file_ext = os.path.splitext(file.filename or "")[1]
+    filename = f"{uuid.uuid4()}{file_ext}"
+    temp_path = os.path.join(tempfile.gettempdir(), filename)
 
-    # Save file temporarily to system temp directory
-    temp_dir = tempfile.gettempdir()
-    temp_path = os.path.join(temp_dir, filename)
+    try:
+        with open(temp_path, "wb") as buffer:
+            buffer.write(await file.read())
 
-    with open(temp_path, "wb") as buffer:
-        buffer.write(await file.read())
-
-    processor = prepare_document_processor(
-        file_path=temp_path,
-        filetype=document_in.filetype,
-        vector_store=vector_store,
-    )
-    document = create_document(db, document_in)
-    processor.process(UUID(document.id))
-    return document
+        processor = prepare_document_processor(
+            file_path=temp_path,
+            filetype=document_in.filetype,
+            vector_store=vector_store,
+        )
+        document = create_document(db, document_in)
+        processor.process(UUID(document.id))
+        return document
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 
 @router.get("", response_model=DocumentListReturn)
@@ -103,6 +103,21 @@ async def list_workspace_documents(
         limit=limit,
     )
     return DocumentListReturn(items=items, total=total, skip=skip, limit=limit)
+
+
+@router.get("/{document_id}", response_model=DocumentReturn)
+async def get_user_document(
+    document_id: str,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> Document:
+    document = get_document_for_user(db, current_user.id, document_id)
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+    return document
 
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)

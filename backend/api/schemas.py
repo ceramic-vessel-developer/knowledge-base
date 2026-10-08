@@ -44,6 +44,10 @@ class WorkspaceCreate(BaseModel):
     type: WorkspaceType = WorkspaceType.BASIC
 
 
+class WorkspaceUpdate(BaseModel):
+    name: str
+
+
 class WorkspaceReturn(TimestampSoftDeleteReturn):
     id: str
     name: str
@@ -96,6 +100,10 @@ class ChunkReturn(TimestampSoftDeleteReturn):
 class ChatCreate(BaseModel):
     name: str
     workspace_id: str
+
+
+class ChatUpdate(BaseModel):
+    name: str
 
 
 class ChatReturn(TimestampSoftDeleteReturn):

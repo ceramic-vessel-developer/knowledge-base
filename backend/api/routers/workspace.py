@@ -10,6 +10,7 @@ from backend.api.crud import (
     get_all_workspaces_for_user,
     get_workspace_for_user,
     get_workspaces_for_user,
+    update_workspace_for_user,
 )
 from backend.api.deps import get_current_user, get_db
 from backend.api.schemas import (
@@ -17,6 +18,7 @@ from backend.api.schemas import (
     WorkspaceListReturn,
     WorkspaceOption,
     WorkspaceReturn,
+    WorkspaceUpdate,
 )
 from backend.db.models import User, Workspace
 
@@ -67,6 +69,27 @@ async def get_user_workspace(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> Workspace:
     workspace = get_workspace_for_user(db, current_user.id, workspace_id)
+    if workspace is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workspace not found",
+        )
+    return workspace
+
+
+@router.patch("/{workspace_id}", response_model=WorkspaceReturn)
+async def rename_user_workspace(
+    workspace_id: str,
+    workspace_in: WorkspaceUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> Workspace:
+    workspace = update_workspace_for_user(
+        db,
+        current_user.id,
+        workspace_id,
+        workspace_in.name,
+    )
     if workspace is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

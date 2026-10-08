@@ -14,6 +14,7 @@ from backend.api.crud import (
     get_document_ids_for_workspace,
     get_messages_for_chat,
     get_workspace_for_user,
+    update_chat_for_user,
 )
 from backend.api.deps import get_current_user, get_db, get_vector_store
 from backend.api.schemas import (
@@ -24,6 +25,7 @@ from backend.api.schemas import (
     ChatMessageCreate,
     ChatMessageListReturn,
     ChatReturn,
+    ChatUpdate,
 )
 from backend.common.GeneratorConfigs import (
     GenModelType,
@@ -123,6 +125,22 @@ async def get_user_chat(
     return chat
 
 
+@router.patch("/{chat_id}", response_model=ChatReturn)
+async def rename_user_chat(
+    chat_id: str,
+    chat_in: ChatUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> Chat:
+    chat = update_chat_for_user(db, current_user.id, chat_id, chat_in.name)
+    if chat is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chat not found",
+        )
+    return chat
+
+
 @router.get("/{chat_id}/messages", response_model=ChatMessageListReturn)
 async def list_chat_messages(
     chat_id: str,
@@ -171,6 +189,11 @@ async def ask_in_chat(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Workspace not found",
+        )
+    if not document_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Workspace has no documents to answer from",
         )
 
     user_message = create_chat_message(

@@ -2,9 +2,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pwdlib import PasswordHash
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
 
@@ -71,6 +72,32 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+@app.get("/health")
+def health(
+    request: Request,
+    db: Annotated[Session, Depends(get_db)],
+):
+    try:
+        db.execute(text("SELECT 1"))
+        database_ok = True
+    except Exception:
+        database_ok = False
+
+    vector_store_ok = getattr(request.app.state, "vector_store", None) is not None
+    ready = database_ok and vector_store_ok
+    payload = {
+        "status": "ok" if ready else "degraded",
+        "database": database_ok,
+        "vector_store": vector_store_ok,
+    }
+    if not ready:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=payload,
+        )
+    return payload
 
 
 @app.post("/users", response_model=UserReturn, status_code=status.HTTP_201_CREATED)
