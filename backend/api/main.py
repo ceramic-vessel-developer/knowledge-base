@@ -114,10 +114,8 @@ def register_user(
         )
     return create_user(
         db,
-        username=user_in.username,
-        email=user_in.email,
+        user_in,
         password_hash=get_password_hash(user_in.password),
-        role=user_in.role,
     )
 
 

@@ -1,8 +1,23 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from backend.api.schemas import (
+    ChatCreate,
+    ChatMessageCreate,
+    DocumentCreate,
+    UserCreate,
+    WorkspaceCreate,
+)
+from backend.common.message_author import MessageAuthor
 from backend.common.role import UserRole
-from backend.db.models import User
+from backend.db.models import Chat, ChatMessage, Document, User, Workspace
+
+
+def _save(db: Session, obj):
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
 
 
 def get_user(db: Session, username: str) -> User | None:
@@ -16,19 +31,65 @@ def get_user(db: Session, username: str) -> User | None:
 
 def create_user(
     db: Session,
-    *,
-    username: str,
-    email: str,
+    user_in: UserCreate,
     password_hash: str,
-    role: UserRole = UserRole.USER,
 ) -> User:
-    user = User(
-        username=username,
-        email=email,
-        password_hash=password_hash,
-        role=role,
+    return _save(
+        db,
+        User(
+            username=user_in.username,
+            email=user_in.email,
+            password_hash=password_hash,
+            role=UserRole.USER,
+        ),
     )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+
+
+def create_workspace(
+    db: Session,
+    workspace_in: WorkspaceCreate,
+    user_id: str,
+) -> Workspace:
+    return _save(
+        db,
+        Workspace(**workspace_in.model_dump(), user_id=user_id),
+    )
+
+
+def create_document(db: Session, document_in: DocumentCreate) -> Document:
+    return _save(db, Document(**document_in.model_dump()))
+
+
+def get_documents_for_workspace(
+    db: Session,
+    user_id: str,
+    workspace_id: str,
+) -> list[Document]:
+    return list(
+        db.scalars(
+            select(Document)
+            .join(Workspace, Document.workspace_id == Workspace.id)
+            .where(
+                Document.workspace_id == workspace_id,
+                Workspace.user_id == user_id,
+                Document.is_deleted.is_(False),
+                Workspace.is_deleted.is_(False),
+            )
+            .order_by(Document.created_at)
+        ).all()
+    )
+
+
+def create_chat(db: Session, chat_in: ChatCreate) -> Chat:
+    return _save(db, Chat(**chat_in.model_dump()))
+
+
+def create_chat_message(
+    db: Session,
+    message_in: ChatMessageCreate,
+    author: MessageAuthor,
+) -> ChatMessage:
+    return _save(
+        db,
+        ChatMessage(**message_in.model_dump(), author=author),
+    )
