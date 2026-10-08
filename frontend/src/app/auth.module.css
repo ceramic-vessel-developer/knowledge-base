@@ -1,0 +1,35 @@
+.wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 0;
+}
+
+.card {
+  width: min(420px, calc(100% - 2rem));
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--leaf-deep);
+  margin-bottom: 0.35rem;
+}
+
+.form {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.25rem;
+}
+
+.footer {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.footer a {
+  color: var(--leaf);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

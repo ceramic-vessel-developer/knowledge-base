@@ -1,0 +1,82 @@
+.crumb {
+  margin-bottom: 0.75rem;
+  font-size: 0.92rem;
+}
+
+.crumb a {
+  color: var(--leaf);
+  font-weight: 600;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+}
+
+.thread {
+  display: grid;
+  gap: 0.85rem;
+  min-height: 320px;
+  max-height: min(55vh, 560px);
+  overflow: auto;
+  padding-right: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.bubble {
+  max-width: min(720px, 92%);
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.user {
+  justify-self: end;
+  background: rgba(31, 107, 74, 0.12);
+  border-color: rgba(31, 107, 74, 0.25);
+}
+
+.ai {
+  justify-self: start;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.author {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+  opacity: 0.7;
+}
+
+.composer {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.composer textarea {
+  min-height: 96px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
