@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
-from pydantic.v1 import EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from backend.common.FileTypes import FileTypes
 from backend.common.message_author import MessageAuthor
@@ -35,8 +34,8 @@ class UserCreate(BaseModel):
 
 class UserReturn(TimestampSoftDeleteReturn):
     id: str
-    username: EmailStr
-    email: str
+    username: str
+    email: EmailStr
     role: UserRole
 
 
@@ -50,6 +49,13 @@ class WorkspaceReturn(TimestampSoftDeleteReturn):
     name: str
     type: WorkspaceType
     user_id: str
+
+
+class WorkspaceListReturn(BaseModel):
+    items: list[WorkspaceReturn]
+    total: int
+    skip: int
+    limit: int
 
 
 class DocumentCreate(BaseModel):

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.api.schemas import (
@@ -54,6 +54,43 @@ def create_workspace(
         db,
         Workspace(**workspace_in.model_dump(), user_id=user_id),
     )
+
+
+def get_workspace_for_user(
+    db: Session,
+    user_id: str,
+    workspace_id: str,
+) -> Workspace | None:
+    return db.scalar(
+        select(Workspace).where(
+            Workspace.id == workspace_id,
+            Workspace.user_id == user_id,
+            Workspace.is_deleted.is_(False),
+        )
+    )
+
+
+def get_workspaces_for_user(
+    db: Session,
+    user_id: str,
+    skip: int = 0,
+    limit: int = 20,
+) -> tuple[list[Workspace], int]:
+    filters = (
+        Workspace.user_id == user_id,
+        Workspace.is_deleted.is_(False),
+    )
+    total = db.scalar(select(func.count()).select_from(Workspace).where(*filters)) or 0
+    items = list(
+        db.scalars(
+            select(Workspace)
+            .where(*filters)
+            .order_by(Workspace.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        ).all()
+    )
+    return items, total
 
 
 def create_document(db: Session, document_in: DocumentCreate) -> Document:
