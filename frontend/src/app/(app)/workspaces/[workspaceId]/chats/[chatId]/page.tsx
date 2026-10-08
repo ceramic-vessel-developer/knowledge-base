@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  FormEvent,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useParams } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 import type { Chat, ChatMessage } from "@/lib/types";
@@ -37,9 +44,8 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  async function onAsk(e: FormEvent) {
-    e.preventDefault();
-    if (!question.trim()) return;
+  async function submitAsk() {
+    if (!question.trim() || busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -51,6 +57,18 @@ export default function ChatPage() {
       setError(err instanceof ApiError ? String(err.detail) : "Ask failed");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function onAsk(e: FormEvent) {
+    e.preventDefault();
+    await submitAsk();
+  }
+
+  function onComposerKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      void submitAsk();
     }
   }
 
@@ -112,7 +130,8 @@ export default function ChatPage() {
           <textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask a question…"
+            onKeyDown={onComposerKeyDown}
+            placeholder="Ask a question… (Enter to send, Shift+Enter for new line)"
             required
           />
           <div className={styles.actions}>

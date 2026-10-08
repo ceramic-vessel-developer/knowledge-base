@@ -42,20 +42,3 @@
 .main {
   padding: 2rem 0 3rem;
 }
-
-.health {
-  font-size: 0.8rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-}
-
-.healthOk {
-  background: #e4f3ea;
-  color: var(--leaf-deep);
-}
-
-.healthBad {
-  background: #f8e8e6;
-  color: #8b2e2e;
-}

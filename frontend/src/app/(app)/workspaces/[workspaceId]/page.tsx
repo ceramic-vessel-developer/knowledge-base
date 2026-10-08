@@ -143,15 +143,16 @@ export default function WorkspaceDetailPage() {
             )}
             {documents.map((doc) => (
               <div key={doc.id} className="listRow">
-                <div>
-                  <Link href={`/workspaces/${workspaceId}/documents/${doc.id}`}>
-                    <strong>{doc.filename}</strong>
-                  </Link>
+                <Link
+                  href={`/workspaces/${workspaceId}/documents/${doc.id}`}
+                  className="listRowMain"
+                >
+                  <strong>{doc.filename}</strong>
                   <div className={styles.meta}>
                     {FILE_TYPE_LABELS[doc.filetype]} ·{" "}
                     {new Date(doc.created_at).toLocaleString()}
                   </div>
-                </div>
+                </Link>
                 <div className="rowActions">
                   <button
                     type="button"
@@ -189,14 +190,15 @@ export default function WorkspaceDetailPage() {
             )}
             {chats.map((chat) => (
               <div key={chat.id} className="listRow">
-                <div>
-                  <Link href={`/workspaces/${workspaceId}/chats/${chat.id}`}>
-                    <strong>{chat.name}</strong>
-                  </Link>
+                <Link
+                  href={`/workspaces/${workspaceId}/chats/${chat.id}`}
+                  className="listRowMain"
+                >
+                  <strong>{chat.name}</strong>
                   <div className={styles.meta}>
                     {new Date(chat.created_at).toLocaleString()}
                   </div>
-                </div>
+                </Link>
                 <div className="rowActions">
                   <button
                     type="button"

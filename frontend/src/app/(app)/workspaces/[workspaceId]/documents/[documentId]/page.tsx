@@ -59,14 +59,6 @@ export default function DocumentDetailPage() {
               <dd>{FILE_TYPE_LABELS[doc.filetype]}</dd>
             </div>
             <div className={styles.metaRow}>
-              <dt>ID</dt>
-              <dd>{doc.id}</dd>
-            </div>
-            <div className={styles.metaRow}>
-              <dt>Workspace</dt>
-              <dd>{doc.workspace_id}</dd>
-            </div>
-            <div className={styles.metaRow}>
               <dt>Created</dt>
               <dd>{new Date(doc.created_at).toLocaleString()}</dd>
             </div>

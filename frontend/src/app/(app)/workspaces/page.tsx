@@ -91,14 +91,12 @@ export default function WorkspacesPage() {
           )}
           {items.map((ws) => (
             <div key={ws.id} className="listRow">
-              <div>
-                <Link href={`/workspaces/${ws.id}`}>
-                  <strong>{ws.name}</strong>
-                </Link>
+              <Link href={`/workspaces/${ws.id}`} className="listRowMain">
+                <strong>{ws.name}</strong>
                 <div className={styles.meta}>
                   {ws.type} · updated {new Date(ws.modified_at).toLocaleString()}
                 </div>
-              </div>
+              </Link>
               <div className="rowActions">
                 <button type="button" className="btn btnGhost" onClick={() => onRename(ws)}>
                   Rename
