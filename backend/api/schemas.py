@@ -58,6 +58,14 @@ class WorkspaceListReturn(BaseModel):
     limit: int
 
 
+class WorkspaceOption(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    name: str
+    type: WorkspaceType
+
+
 class DocumentCreate(BaseModel):
     filename: str
     filetype: FileTypes
@@ -69,6 +77,13 @@ class DocumentReturn(TimestampSoftDeleteReturn):
     filename: str
     filetype: FileTypes
     workspace_id: str
+
+
+class DocumentListReturn(BaseModel):
+    items: list[DocumentReturn]
+    total: int
+    skip: int
+    limit: int
 
 
 class ChunkReturn(TimestampSoftDeleteReturn):

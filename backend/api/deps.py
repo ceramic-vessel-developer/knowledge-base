@@ -2,9 +2,10 @@ import os
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
+from langchain_postgres import PGVectorStore
 from sqlalchemy.orm import Session
 
 from backend.api.crud import get_user
@@ -53,3 +54,13 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_vector_store(request: Request) -> PGVectorStore:
+    vector_store = getattr(request.app.state, "vector_store", None)
+    if vector_store is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store is not initialized",
+        )
+    return vector_store

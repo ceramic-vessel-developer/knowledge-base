@@ -16,14 +16,17 @@ from backend.api.deps import (
     get_current_user,
     get_db,
 )
+from backend.api.lifespan import lifespan
+from backend.api.routers.document import router as document_router
 from backend.api.routers.workspace import router as workspace_router
 from backend.api.schemas import Token, UserCreate, UserReturn
 from backend.db.models import User
 
 password_hash = PasswordHash.recommended()
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 app.include_router(workspace_router)
+app.include_router(document_router)
 
 origins = [
     "http://localhost.tiangolo.com",
