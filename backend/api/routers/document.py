@@ -4,7 +4,7 @@ import uuid
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from langchain_core.vectorstores import VectorStore
 from sqlalchemy.orm import Session
 from starlette import status
@@ -56,9 +56,24 @@ async def upload_user_document(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
     vector_store: Annotated[VectorStore, Depends(get_vector_store)],
-    document_in: DocumentCreate,
-    file: UploadFile = File(...),
+    filename: Annotated[str, Form()],
+    filetype: Annotated[int, Form()],
+    workspace_id: Annotated[str, Form()],
+    file: Annotated[UploadFile, File()],
 ) -> Document:
+    try:
+        parsed_filetype = FileTypes(filetype)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid filetype",
+        ) from exc
+
+    document_in = DocumentCreate(
+        filename=filename,
+        filetype=parsed_filetype,
+        workspace_id=workspace_id,
+    )
     workspace = get_workspace_for_user(db, current_user.id, document_in.workspace_id)
     if workspace is None:
         raise HTTPException(
@@ -67,8 +82,8 @@ async def upload_user_document(
         )
 
     file_ext = os.path.splitext(file.filename or "")[1]
-    filename = f"{uuid.uuid4()}{file_ext}"
-    temp_path = os.path.join(tempfile.gettempdir(), filename)
+    temp_name = f"{uuid.uuid4()}{file_ext}"
+    temp_path = os.path.join(tempfile.gettempdir(), temp_name)
 
     try:
         with open(temp_path, "wb") as buffer:
