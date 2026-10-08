@@ -104,6 +104,17 @@ class ChatReturn(TimestampSoftDeleteReturn):
     workspace_id: str
 
 
+class ChatListReturn(BaseModel):
+    items: list[ChatReturn]
+    total: int
+    skip: int
+    limit: int
+
+
+class ChatAskRequest(BaseModel):
+    question: str
+
+
 class ChatMessageCreate(BaseModel):
     content: str
     chat_id: str
@@ -114,3 +125,15 @@ class ChatMessageReturn(TimestampSoftDeleteReturn):
     content: str
     author: MessageAuthor
     chat_id: str
+
+
+class ChatMessageListReturn(BaseModel):
+    items: list[ChatMessageReturn]
+    total: int
+    skip: int
+    limit: int
+
+
+class ChatAskReturn(BaseModel):
+    user_message: ChatMessageReturn
+    ai_message: ChatMessageReturn

@@ -205,6 +205,78 @@ def create_chat(db: Session, chat_in: ChatCreate) -> Chat:
     return _save(db, Chat(**chat_in.model_dump()))
 
 
+def get_chat_for_user(
+    db: Session,
+    user_id: str,
+    chat_id: str,
+) -> Chat | None:
+    return db.scalar(
+        select(Chat)
+        .join(Workspace, Chat.workspace_id == Workspace.id)
+        .where(
+            Chat.id == chat_id,
+            Workspace.user_id == user_id,
+            Chat.is_deleted.is_(False),
+            Workspace.is_deleted.is_(False),
+        )
+    )
+
+
+def get_chats_for_workspace(
+    db: Session,
+    user_id: str,
+    workspace_id: str,
+    skip: int = 0,
+    limit: int = 20,
+) -> tuple[list[Chat], int]:
+    filters = (
+        Chat.workspace_id == workspace_id,
+        Workspace.user_id == user_id,
+        Chat.is_deleted.is_(False),
+        Workspace.is_deleted.is_(False),
+    )
+    total = (
+        db.scalar(
+            select(func.count())
+            .select_from(Chat)
+            .join(Workspace, Chat.workspace_id == Workspace.id)
+            .where(*filters)
+        )
+        or 0
+    )
+    items = list(
+        db.scalars(
+            select(Chat)
+            .join(Workspace, Chat.workspace_id == Workspace.id)
+            .where(*filters)
+            .order_by(Chat.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        ).all()
+    )
+    return items, total
+
+
+def delete_chat_for_user(
+    db: Session,
+    user_id: str,
+    chat_id: str,
+) -> Chat | None:
+    chat = get_chat_for_user(db, user_id, chat_id)
+    if chat is None:
+        return None
+    now = datetime.now(timezone.utc)
+    db.execute(
+        update(ChatMessage)
+        .where(
+            ChatMessage.chat_id == chat_id,
+            ChatMessage.is_deleted.is_(False),
+        )
+        .values(is_deleted=True, deleted_at=now)
+    )
+    return _soft_delete(db, chat)
+
+
 def create_chat_message(
     db: Session,
     message_in: ChatMessageCreate,
@@ -213,4 +285,54 @@ def create_chat_message(
     return _save(
         db,
         ChatMessage(**message_in.model_dump(), author=author),
+    )
+
+
+def get_messages_for_chat(
+    db: Session,
+    user_id: str,
+    chat_id: str,
+    skip: int = 0,
+    limit: int = 50,
+) -> tuple[list[ChatMessage], int] | None:
+    chat = get_chat_for_user(db, user_id, chat_id)
+    if chat is None:
+        return None
+    filters = (
+        ChatMessage.chat_id == chat_id,
+        ChatMessage.is_deleted.is_(False),
+    )
+    total = (
+        db.scalar(
+            select(func.count()).select_from(ChatMessage).where(*filters)
+        )
+        or 0
+    )
+    items = list(
+        db.scalars(
+            select(ChatMessage)
+            .where(*filters)
+            .order_by(ChatMessage.created_at.asc())
+            .offset(skip)
+            .limit(limit)
+        ).all()
+    )
+    return items, total
+
+
+def get_document_ids_for_workspace(
+    db: Session,
+    user_id: str,
+    workspace_id: str,
+) -> list[str] | None:
+    workspace = get_workspace_for_user(db, user_id, workspace_id)
+    if workspace is None:
+        return None
+    return list(
+        db.scalars(
+            select(Document.id).where(
+                Document.workspace_id == workspace_id,
+                Document.is_deleted.is_(False),
+            )
+        ).all()
     )
